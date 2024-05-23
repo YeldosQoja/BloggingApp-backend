@@ -4,23 +4,59 @@ from .serializers import (
     UserSerializer,
     BlogSerializer,
     CommentSerializer,
-    CustomTokenObtainPairSerializer,
 )
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    authentication_classes,
+)
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-
-# Imported to create custom token obtain pair views
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
 
 
 # Create your views here.
-# Create a subclass of TokenObtainPairView
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def user_login(request):
+    try:
+        username = request.data["username"]
+        password = request.data["password"]
+        user = authenticate(username=username, password=password)
+        if not user:
+            raise AuthenticationFailed(
+                "No active account found with the given credentials"
+            )
+        serializer = UserSerializer(user)
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+    except (KeyError, AuthenticationFailed) as error:
+        match error:
+            case KeyError():
+                return Response(
+                    {"error": {"message": "Username or(and) password not provided!"}},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            case AuthenticationFailed():
+                return Response(
+                    {"error": {"message": error.detail}},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()

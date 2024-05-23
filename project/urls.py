@@ -21,17 +21,17 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from blogs.views import (
     user_detail,
     user_list,
+    user_login,
     CreateUserView,
-    CustomTokenObtainPairView,
 )
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/user/register/", CreateUserView.as_view(), name="register-user"),
+    path("api/register/", CreateUserView.as_view(), name="register-user"),
     path("api/user/<int:pk>/", user_detail, name="user"),
     path("api/users/", user_list, name="user-list"),
     path("api/blogs/", include("blogs.urls")),
-    path("api/token/", CustomTokenObtainPairView.as_view(), name="token"),
+    path("api/login/", user_login, name="token"),
     path("api/token/refresh", TokenRefreshView.as_view(), name="token-refresh"),
     path("api-auth/", include("rest_framework.urls")),
 ]

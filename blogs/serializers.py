@@ -45,12 +45,3 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ["id", "author", "blog", "text", "created_at"]
         extra_kwargs = {"author": {"read_only": True}, "blog": {"read_only": True}}
-
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        serializer = UserSerializer(user)
-        token['user'] = serializer.data
-        return token
