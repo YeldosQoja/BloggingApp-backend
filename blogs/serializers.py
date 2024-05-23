@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Blog, Comment
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import Token
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,9 +27,17 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ["id", "title", "content", "created_at", "author", "tagline", "num_likes", "is_liked"]
+        fields = [
+            "id",
+            "title",
+            "content",
+            "created_at",
+            "author",
+            "tagline",
+            "num_likes",
+            "is_liked",
+        ]
         read_only_fields = ["author", "num_likes", "is_liked"]
-
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -35,3 +45,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ["id", "author", "blog", "text", "created_at"]
         extra_kwargs = {"author": {"read_only": True}, "blog": {"read_only": True}}
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        serializer = UserSerializer(user)
+        token['user'] = serializer.data
+        return token

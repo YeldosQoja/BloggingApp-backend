@@ -1,6 +1,11 @@
 from django.contrib.auth.models import User
 from .models import Blog, Like, Comment
-from .serializers import UserSerializer, BlogSerializer, CommentSerializer
+from .serializers import (
+    UserSerializer,
+    BlogSerializer,
+    CommentSerializer,
+    CustomTokenObtainPairSerializer,
+)
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -8,8 +13,14 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-# Create your views here.
+# Imported to create custom token obtain pair views
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+
+# Create your views here.
+# Create a subclass of TokenObtainPairView
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -37,6 +48,7 @@ class BlogListCreateView(generics.ListCreateAPIView):
             serializer.save(author=self.request.user)
         else:
             print(serializer.errors)
+
 
 class BlogRetrieveView(generics.RetrieveAPIView):
     queryset = Blog.objects.all()
