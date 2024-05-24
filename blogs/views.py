@@ -58,6 +58,15 @@ def user_login(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class ProfileUserRetrieveView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer

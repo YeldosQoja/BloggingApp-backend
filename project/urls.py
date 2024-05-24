@@ -23,11 +23,13 @@ from blogs.views import (
     user_list,
     user_login,
     CreateUserView,
+    ProfileUserRetrieveView,
 )
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/register/", CreateUserView.as_view(), name="register-user"),
+    path("api/profile/user/", ProfileUserRetrieveView.as_view(), name="profile-user"),
     path("api/user/<int:pk>/", user_detail, name="user"),
     path("api/users/", user_list, name="user-list"),
     path("api/blogs/", include("blogs.urls")),
